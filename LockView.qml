@@ -264,7 +264,7 @@ Item {
         implicitHeight: Style.space(38)
         radius: Style.cornerRadius
         color: shutdownHover.hovered ? Color.lock.borderActive : Color.lock.background
-        border.color: shutdownHover.hovered ? Color.urgent : Color.lock.borderActive
+        border.color: Color.lock.borderActive
         border.width: 2
         opacity: shutdownHover.hovered ? 1.0 : 0.85
 
@@ -285,14 +285,14 @@ Item {
 
           Text {
             text: ""
-            color: shutdownHover.hovered ? Color.urgent : Color.lock.text
+            color: shutdownHover.hovered ? Color.lock.background : Color.lock.text
             font.family: Style.font.family
             font.pixelSize: Math.round(Style.font.heading * 0.9)
           }
 
           Text {
             text: "Shutdown"
-            color: shutdownHover.hovered ? Color.urgent : Color.lock.text
+            color: shutdownHover.hovered ? Color.lock.background : Color.lock.text
             font.family: Style.font.family
             font.pixelSize: Style.font.body
             font.bold: true
@@ -306,7 +306,7 @@ Item {
         implicitHeight: Style.space(38)
         radius: Style.cornerRadius
         color: rebootHover.hovered ? Color.lock.borderActive : Color.lock.background
-        border.color: rebootHover.hovered ? Color.accent : Color.lock.borderActive
+        border.color: Color.lock.borderActive
         border.width: 2
         opacity: rebootHover.hovered ? 1.0 : 0.85
 
@@ -327,14 +327,14 @@ Item {
 
           Text {
             text: ""
-            color: rebootHover.hovered ? Color.accent : Color.lock.text
+            color: rebootHover.hovered ? Color.lock.background : Color.lock.text
             font.family: Style.font.family
             font.pixelSize: Math.round(Style.font.heading * 0.9)
           }
 
           Text {
             text: "Reboot"
-            color: rebootHover.hovered ? Color.accent : Color.lock.text
+            color: rebootHover.hovered ? Color.lock.background : Color.lock.text
             font.family: Style.font.family
             font.pixelSize: Style.font.body
             font.bold: true
