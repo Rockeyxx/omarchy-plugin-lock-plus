@@ -4,6 +4,7 @@ import Quickshell.Io
 import Quickshell.Services.Pam
 import Quickshell.Wayland
 import qs.Commons
+import qs.Commons as Commons
 
 Item {
   id: root
@@ -35,6 +36,13 @@ Item {
   property bool strandedLockResolved: false
 
   readonly property bool locked: lockRequested || sessionLock.locked || sessionLock.secure
+
+  // Decisions read the lock state afresh. A property binding that missed a change
+  // notification once reported locked after an unlock, and a lock request before
+  // suspend then took that for done and never locked the session.
+  function currentlyLocked() {
+    return lockRequested || sessionLock.locked || sessionLock.secure
+  }
   readonly property bool authenticating: authenticatingPassword || fingerprintAuthenticating
 
   function realScreenCount() {
@@ -77,13 +85,16 @@ Item {
   }
 
   // ext-session-lock outlives its client, and a restart carries no lock over, so
-  // a session locked this early is an orphan behind Hyprland's failsafe. Outputs
-  // are often still absent here, so ask until the answer means something.
+  // a session locked this early may be an orphan behind Hyprland's failsafe. It
+  // may also be another shell's live lock, which Hyprland would let this one
+  // take over and then strand on exit, so the helper answers undetermined while
+  // another locker runs. Outputs are often still absent here, so ask until the
+  // answer means something.
   function checkStrandedLock() {
     if (strandedLockResolved || strandedLockCheckProc.running) return
 
     // A lock this shell took is nobody's orphan.
-    if (locked || lockRequested) {
+    if (currentlyLocked()) {
       strandedLockResolved = true
       return
     }
@@ -92,7 +103,7 @@ Item {
   }
 
   function recoverStrandedLock() {
-    if (!strandedLock || locked || !passwordPamConfigured) return
+    if (!strandedLock || currentlyLocked() || !passwordPamConfigured) return
 
     strandedLock = false
     logEvent("lock-stranded: recovering")
@@ -146,7 +157,7 @@ Item {
   }
 
   function finishUnlock() {
-    if (!root.locked && !lockRequested) return
+    if (!root.currentlyLocked()) return
 
     lockRequested = false
     pendingSessionLock = false
@@ -263,7 +274,7 @@ Item {
 
     WlSessionLockSurface {
       id: lockSurface
-      color: Color.background
+      color: Commons.Color.background
 
       LockView {
         id: lockView
@@ -388,7 +399,8 @@ Item {
 
   Process {
     id: strandedLockCheckProc
-    command: ["bash", "-c", "omarchy-hyprland-session-locked"]
+    // $PPID is this shell: a crash re-execs in place, so its pid is the one to skip.
+    command: ["bash", "-c", "omarchy-hyprland-session-lock-stranded \"$PPID\""]
     onExited: function(exitCode) {
       // No output to read the lock off yet.
       if (exitCode === 2) return
@@ -396,7 +408,7 @@ Item {
       root.strandedLockResolved = true
 
       // A lock taken while this was in flight is this shell's own.
-      root.strandedLock = exitCode === 0 && !root.locked && !root.lockRequested
+      root.strandedLock = exitCode === 0 && !root.currentlyLocked()
       root.recoverStrandedLock()
     }
   }
@@ -512,17 +524,17 @@ Item {
 
     function lock(): string {
       if (!root.passwordPamConfigured) return "missing-pam"
-      if (!root.locked && !root.beginLock()) return "failed"
+      if (!root.currentlyLocked() && !root.beginLock()) return "failed"
       return "ok"
     }
 
     function isLocked(): string {
-      return root.locked ? "true" : "false"
+      return root.currentlyLocked() ? "true" : "false"
     }
 
     function status(): string {
       return JSON.stringify({
-        locked: root.locked,
+        locked: root.currentlyLocked(),
         requested: root.lockRequested,
         pending: root.pendingSessionLock,
         sessionLocked: sessionLock.locked,
