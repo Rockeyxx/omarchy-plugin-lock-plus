@@ -18,7 +18,8 @@ handling, and theming — is Omarchy's, untouched.
 
 ## Requirements
 
-- Omarchy 4.x (Quattro shell / Quickshell plugin system)
+- Omarchy 4.5 or newer (Quattro shell / Quickshell plugin system). The upstream
+  files bundled here are synced with Omarchy 4.5; an older Omarchy will not load them.
 - No external dependencies. `systemctl poweroff` and `systemctl reboot` are called
   directly for the power buttons.
 
@@ -51,6 +52,11 @@ that `omarchy plugin` manages itself.
 ```bash
 omarchy plugin update rockeyxx.lock-plus
 ```
+
+This plugin bundles copies of Omarchy's lock files (`Service.qml`,
+`FingerprintModel.js`, `poster.sh`), and `LockView.qml` has to match them. After a
+major Omarchy update, update this plugin too. If the lock stops loading, check
+`journalctl --user -b | grep lock-plus` and open an issue.
 
 ## Security note
 

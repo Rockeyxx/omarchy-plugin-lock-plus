@@ -2,5 +2,6 @@ Lock Plus is a derivative work of the Omarchy lock screen plugin
 (shell/plugins/lock) from https://github.com/basecamp/omarchy, Copyright (c)
 David Heinemeier Hansson, used under the MIT License.
 
-Service.qml is unmodified from upstream. LockView.qml adds a live clock, a date
-display, and shutdown/reboot buttons on top of the upstream file.
+Service.qml, FingerprintModel.js and poster.sh are unmodified from upstream
+(Omarchy 4.5). LockView.qml adds a live clock, a date display, and
+shutdown/reboot buttons on top of the upstream file.
